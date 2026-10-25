@@ -4,3 +4,4 @@ ultralytics>=8.3.0
 opencv-python-headless>=4.8.0
 numpy>=1.24
 lap>=0.5.12   # required by the Ultralytics tracker (object tracking)
+streamlit-webrtc>=0.47.0   # optional: live browser camera (the Live camera tab says so if it is missing)

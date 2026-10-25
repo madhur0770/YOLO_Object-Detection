@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/madhur0770/YOLO_Object-Detection/actions/workflows/ci.yml/badge.svg)](https://github.com/madhur0770/YOLO_Object-Detection/actions/workflows/ci.yml)
 
-**A Streamlit app for detecting and counting objects with YOLO models: upload an image or video, or take a camera snapshot, restrict counting to a region of interest, and export the counts as CSV. Includes a custom-trained mask detector and the training pipeline behind it.**
+**A Streamlit app for detecting and counting objects with YOLO models: upload an image or video, use the live camera, or take a snapshot, restrict counting to a region of interest, and export the counts as CSV. Includes a custom-trained mask detector and the training pipeline behind it.**
 
 ![The app detecting objects in a sample photo, counting those inside the green region of interest](docs/assets/app-image-detection.png)
 
@@ -11,7 +11,8 @@
 ## Features
 
 - **Six selectable models:** a custom-trained mask / no-mask detector (YOLO11n), four Open Images v7 models (nano to extra large, 600 classes) and COCO YOLO11n (80 classes).
-- **Three inputs:** image upload, video upload (every Nth frame, with a progress bar) and a browser camera snapshot.
+- **Four inputs:** image upload, video upload (every Nth frame, with a progress bar), a live camera and a browser camera snapshot.
+- **Live camera:** either the webcam of the machine running the app (Start/Stop, live counts) or your browser's camera through `streamlit-webrtc`, which also works on a hosted deployment. Both write a session CSV when stopped.
 - **Region of interest (ROI):** set as a percentage of the frame, so it works at any resolution. An object counts as "inside" when its centre is strictly inside the box.
 - **Counting you can trust on video:** reports the *peak count per frame*, the total detections, and, with tracking on, the number of *unique* objects.
 - **Class filter**, confidence slider, bounding boxes with labels and centre markers.
@@ -76,7 +77,7 @@ The API key is read from the environment and never stored in the repository.
 ## Architecture
 
 ```
-app.py                    Streamlit interface (image / video / camera tabs, sidebar settings)
+app.py                    Streamlit interface (image / video / live camera / snapshot tabs, sidebar settings)
 yolostudio/
   counting.py             Detection, Roi, Aggregator, CSV builders: pure Python, no model needed
   inference.py            run a model, convert Ultralytics results to Detection objects, draw annotations
@@ -99,7 +100,7 @@ GitHub Actions runs the unit and Streamlit UI tests on Windows and Linux (Python
 ## Limitations
 
 - Accuracy depends on the model. The mask detector is trained on a small public dataset and is a demonstration, not a safety system.
-- The camera tab analyses snapshots; it is not a continuous live stream.
+- The live camera runs as fast as the model allows on CPU, so the larger Open Images models give a low frame rate. The browser camera needs a WebRTC connection (a STUN server is configured; very restrictive networks may block it).
 - Large models are slow on CPU. Video is processed on the server that runs the app.
 - Tracking uses Ultralytics' built-in tracker with default settings. Unique-object counts can be inflated when a tracker loses and re-acquires an object.
 - Third-party licences apply: Ultralytics YOLO and its pretrained weights are released under AGPL-3.0, and the Open Images and COCO weights follow Ultralytics' terms. Check them before using this in a commercial product.

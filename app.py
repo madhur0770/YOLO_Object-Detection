@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import os
 import tempfile
+import time
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
 
 import streamlit as st
 
-from yolostudio import counting, inference, models
+from yolostudio import counting, inference, live, models
 
 st.set_page_config(page_title="YOLO Object Detection Studio", page_icon=":mag:", layout="wide")
 
@@ -112,9 +113,91 @@ def process_video(path: str, weights: str, settings: Settings, every_nth: int, m
     st.download_button("Download CSV", counting.build_video_csv(agg), f"video_{timestamp()}.csv", "text/csv")
 
 
+def show_live_counts(slot_total, slot_roi, slot_frames, session: live.LiveSession) -> None:
+    total, in_roi, frames = session.snapshot()
+    slot_total.metric("Objects found", sum(total.values()))
+    slot_roi.metric("Inside ROI", sum(in_roi.values()))
+    slot_frames.caption(f"Frames analysed: {frames}")
+
+
+def live_download(session: live.LiveSession) -> None:
+    if session.aggregator.frames:
+        st.download_button(
+            "Download session CSV", counting.build_video_csv(session.aggregator), f"live_{timestamp()}.csv", "text/csv", key="live_csv"
+        )
+        st.caption("'Total detections' counts an object once per frame it appears in.")
+
+
+def local_webcam(session: live.LiveSession) -> None:
+    import cv2
+
+    st.caption("Reads the camera of the computer running this app, so use it when you run the app on your own machine.")
+    index = st.number_input("Camera index", 0, 10, 0, help="0 is the default webcam.")
+    start, stop = st.columns(2)
+    if start.button("Start webcam", type="primary"):
+        session.reset()
+        st.session_state.live_run = True
+    if stop.button("Stop webcam"):
+        st.session_state.live_run = False
+    frame_slot = st.empty()
+    m1, m2, m3 = st.columns(3)
+    slot_total, slot_roi, slot_frames = m1.empty(), m2.empty(), m3.empty()
+    if not st.session_state.get("live_run"):
+        show_live_counts(slot_total, slot_roi, slot_frames, session)
+        live_download(session)
+        return
+    capture = cv2.VideoCapture(int(index))
+    if not capture.isOpened():
+        st.session_state.live_run = False
+        st.error("Could not open a camera on the machine running the app. If the app is hosted online, use the browser camera instead.")
+        return
+    try:
+        while st.session_state.get("live_run"):
+            ok, frame = capture.read()
+            if not ok:
+                st.session_state.live_run = False
+                st.error("The camera stopped sending frames.")
+                break
+            frame_slot.image(session.process(frame), channels="BGR", use_container_width=True)
+            show_live_counts(slot_total, slot_roi, slot_frames, session)
+    finally:
+        capture.release()
+
+
+def browser_camera(session: live.LiveSession) -> None:
+    try:
+        from streamlit_webrtc import WebRtcMode, webrtc_streamer
+    except ImportError:
+        st.warning("The browser camera needs the optional packages: pip install streamlit-webrtc")
+        return
+    import av
+
+    st.caption("Streams your browser's camera to the app, so it also works on a hosted deployment. Press START and allow camera access.")
+
+    def on_frame(frame):
+        return av.VideoFrame.from_ndarray(session.process(frame.to_ndarray(format="bgr24")), format="bgr24")
+
+    ctx = webrtc_streamer(
+        key="live-browser",
+        mode=WebRtcMode.SENDRECV,
+        video_frame_callback=on_frame,
+        media_stream_constraints={"video": True, "audio": False},
+        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+        async_processing=True,
+    )
+    m1, m2, m3 = st.columns(3)
+    slot_total, slot_roi, slot_frames = m1.empty(), m2.empty(), m3.empty()
+    if ctx.state.playing:
+        while ctx.state.playing:
+            show_live_counts(slot_total, slot_roi, slot_frames, session)
+            time.sleep(0.5)
+    show_live_counts(slot_total, slot_roi, slot_frames, session)
+    live_download(session)
+
+
 # --------------------------------------------------------------------------- layout
 st.title("YOLO Object Detection Studio")
-st.caption("Detect and count objects in images, video and camera snapshots, restrict counting to a region of interest, and export the counts.")
+st.caption("Detect and count objects in images, video and live camera, restrict counting to a region of interest, and export the counts.")
 
 with st.sidebar:
     st.header("Model")
@@ -144,7 +227,7 @@ settings = Settings(
     show_centroids=show_centroids,
 )
 
-tab_image, tab_video, tab_camera = st.tabs(["Image", "Video", "Camera"])
+tab_image, tab_video, tab_live, tab_camera = st.tabs(["Image", "Video", "Live camera", "Snapshot"])
 
 with tab_image:
     upload = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"], key="image")
@@ -173,8 +256,22 @@ with tab_video:
         finally:
             os.unlink(handle.name)
 
+with tab_live:
+    if "live_session" not in st.session_state:
+        st.session_state.live_session = live.LiveSession()
+    live_session: live.LiveSession = st.session_state.live_session
+    if roi_error:
+        st.error("Fix the region of interest in the sidebar first.")
+    else:
+        live_session.configure(spec.weights, settings.confidence, settings.allowed, settings.roi, settings.show_centroids)
+        source = st.radio("Camera source", ["This computer's webcam", "Browser camera"], horizontal=True, key="live_source")
+        if source == "Browser camera":
+            browser_camera(live_session)
+        else:
+            local_webcam(live_session)
+
 with tab_camera:
-    st.caption("Uses your browser's camera and analyses a snapshot, so it also works on a hosted deployment.")
+    st.caption("Takes one picture with your browser's camera and analyses it.")
     shot = st.camera_input("Take a picture")
     if shot is not None:
         show_image_result(cached_model(spec.weights), inference.decode_image(shot.getvalue()), settings, "camera")
