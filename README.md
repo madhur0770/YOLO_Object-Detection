@@ -100,6 +100,7 @@ GitHub Actions runs the unit and Streamlit UI tests on Windows and Linux (Python
 ## Limitations
 
 - Accuracy depends on the model. The mask detector is trained on a small public dataset and is a demonstration, not a safety system.
+- The live camera was checked end to end with a real webcam and with Chromium's simulated camera (frames analysed, live counts, CSV after stopping). That check is a manual run, not part of CI, because CI has no camera.
 - The live camera runs as fast as the model allows on CPU, so the larger Open Images models give a low frame rate. The browser camera needs a WebRTC connection (a STUN server is configured; very restrictive networks may block it).
 - Large models are slow on CPU. Video is processed on the server that runs the app.
 - Tracking uses Ultralytics' built-in tracker with default settings. Unique-object counts can be inflated when a tracker loses and re-acquires an object.
