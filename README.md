@@ -4,6 +4,10 @@
 
 **A Streamlit app for detecting and counting objects with YOLO models: upload an image or video, or take a camera snapshot, restrict counting to a region of interest, and export the counts as CSV. Includes a custom-trained mask detector and the training pipeline behind it.**
 
+![The app detecting objects in a sample photo, counting those inside the green region of interest](docs/assets/app-image-detection.png)
+
+*Image tab on a sample photo (COCO YOLO11n): 5 objects found, 3 whose centre is inside the green region of interest.*
+
 ## Features
 
 - **Six selectable models:** a custom-trained mask / no-mask detector (YOLO11n), four Open Images v7 models (nano to extra large, 600 classes) and COCO YOLO11n (80 classes).
