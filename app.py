@@ -129,8 +129,6 @@ def live_download(session: live.LiveSession) -> None:
 
 
 def local_webcam(session: live.LiveSession) -> None:
-    import cv2
-
     st.caption("Reads the camera of the computer running this app, so use it when you run the app on your own machine.")
     index = st.number_input("Camera index", 0, 10, 0, help="0 is the default webcam.")
     start, stop = st.columns(2)
@@ -146,6 +144,8 @@ def local_webcam(session: live.LiveSession) -> None:
         show_live_counts(slot_total, slot_roi, slot_frames, session)
         live_download(session)
         return
+    import cv2
+
     capture = cv2.VideoCapture(int(index))
     if not capture.isOpened():
         st.session_state.live_run = False
