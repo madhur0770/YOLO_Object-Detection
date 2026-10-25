@@ -8,7 +8,7 @@ class HostingTests(unittest.TestCase):
         self.assertTrue(is_hosted({}, "/mount/src/yolo_object-detection/yolostudio/hosting.py"))
 
     def test_local_path(self):
-        self.assertFalse(is_hosted({}, "C:/Users/me/YOLO/yolostudio/hosting.py"))
+        self.assertFalse(is_hosted({}, "/home/me/YOLO/yolostudio/hosting.py"))
 
     def test_hugging_face_space(self):
         self.assertTrue(is_hosted({"SPACE_ID": "user/space"}, "/app/yolostudio/hosting.py"))
