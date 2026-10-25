@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+# Large or third-party files are not committed: weights download automatically, datasets via scripts/download_dataset.py
+datasets/
+runs/
+*.pt
+!models/mask-detector-yolo11n.pt
+detection_log_*.csv
+.ipynb_checkpoints/
