@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/madhur0770/YOLO_Object-Detection/actions/workflows/ci.yml/badge.svg)](https://github.com/madhur0770/YOLO_Object-Detection/actions/workflows/ci.yml)
 
-**A Streamlit app for detecting and counting objects with YOLO models: upload an image or video, use the live camera, or take a snapshot, restrict counting to a region of interest, and export the counts as CSV. Includes a custom-trained mask detector and the training pipeline behind it.**
+**A Streamlit app for detecting and counting objects with YOLO models: upload an image or video, use the live camera, or take a snapshot, restrict counting to a region of interest, and export the counts as CSV. Works with general-purpose models (80 and 600 object classes) and includes a training pipeline for custom models.**
 
 ![The app detecting objects in a sample photo, counting those inside the green region of interest](docs/assets/app-image-detection.png)
 
@@ -12,14 +12,14 @@
 
 ## Features
 
-- **Six selectable models:** a custom-trained mask / no-mask detector (YOLO11n), four Open Images v7 models (nano to extra large, 600 classes) and COCO YOLO11n (80 classes).
+- **Six selectable models:** COCO YOLO11n (80 classes), four Open Images v7 models from nano to extra large (600 classes), and a small custom-trained example model.
 - **Four inputs:** image upload, video upload (every Nth frame, with a progress bar), a live camera and a browser camera snapshot.
 - **Live camera:** either the webcam of the machine running the app (Start/Stop, live counts) or your browser's camera through `streamlit-webrtc`, which also works on a hosted deployment. Both write a session CSV when stopped.
 - **Region of interest (ROI):** set as a percentage of the frame, so it works at any resolution. An object counts as "inside" when its centre is strictly inside the box.
 - **Counting you can trust on video:** reports the *peak count per frame*, the total detections, and, with tracking on, the number of *unique* objects.
 - **Class filter**, confidence slider, bounding boxes with labels and centre markers.
 - **CSV export** for images and for whole videos.
-- **Reproducible training:** `scripts/train.py` and `scripts/download_dataset.py`, plus the real training curves and metrics for the bundled model.
+- **Reproducible training:** `scripts/train.py` and `scripts/download_dataset.py`, plus the real training curves and metrics for the bundled example model.
 
 ## Technology stack
 
@@ -47,9 +47,9 @@ docker run -p 8501:8501 yolo-studio     # then open http://localhost:8501
 
 ### Deploying
 
-The repository includes `packages.txt` (the system library OpenCV needs) so it can run on [Streamlit Community Cloud](https://streamlit.io/cloud): create an app from this repository with `app.py` as the entry point. Use the nano or medium models there; the large ones need more memory than free hosting provides. The `Dockerfile` also works on any container host, for example a Hugging Face Docker Space. On a hosted server the app starts on the small COCO model and offers only the browser camera, since the server has no webcam.
+The repository includes `packages.txt` (the system library OpenCV needs) so it can run on [Streamlit Community Cloud](https://streamlit.io/cloud): create an app from this repository with `app.py` as the entry point. Use the nano or medium models there; the large ones need more memory than free hosting provides. The `Dockerfile` also works on any container host, for example a Hugging Face Docker Space. On a hosted server the app offers only the browser camera, since the server has no webcam.
 
-## The mask detector
+## Custom training example: a mask detector
 
 The bundled model, `models/mask-detector-yolo11n.pt`, is YOLO11n fine-tuned for 100 epochs at 640 px (batch 16, from pretrained weights) on the [mask-wearing dataset](https://universe.roboflow.com/joseph-nelson/mask-wearing/dataset/1) (Roboflow Universe, public domain). Two classes: `mask`, `no-mask`.
 

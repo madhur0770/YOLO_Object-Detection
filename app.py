@@ -208,7 +208,6 @@ with st.sidebar:
         st.selectbox(
             "Model",
             keys,
-            index=keys.index("coco-n") if HOSTED else 0,  # the smallest general model suits a hosted server
             format_func=lambda k: models.get_model_spec(k).title,
         )
     )

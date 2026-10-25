@@ -20,17 +20,17 @@ class ModelSpec:
 
 
 MODELS: tuple[ModelSpec, ...] = (
+    ModelSpec("coco-n", "COCO - YOLO11n (80 classes)", "yolo11n.pt", "Small, fast, everyday objects."),
+    ModelSpec("oiv7-n", "Open Images v7 - nano (600 classes)", "yolov8n-oiv7.pt", "Fastest general-purpose model."),
+    ModelSpec("oiv7-m", "Open Images v7 - medium (600 classes)", "yolov8m-oiv7.pt", "Balance of speed and accuracy."),
+    ModelSpec("oiv7-l", "Open Images v7 - large (600 classes)", "yolov8l-oiv7.pt", "More accurate, slower."),
+    ModelSpec("oiv7-x", "Open Images v7 - extra large (600 classes)", "yolov8x-oiv7.pt", "Most accurate, slowest."),
     ModelSpec(
         "mask",
-        "Mask detector (custom-trained YOLO11n)",
+        "Mask detector (custom-trained example)",
         str(MODELS_DIR / "mask-detector-yolo11n.pt"),
-        "Two classes (mask, no-mask), fine-tuned from YOLO11n on the public-domain Roboflow mask-wearing dataset.",
+        "Two classes (mask, no-mask), fine-tuned from YOLO11n on a public dataset. Included as an example of custom training.",
     ),
-    ModelSpec("oiv7-n", "Nano - Open Images v7 (600 classes)", "yolov8n-oiv7.pt", "Fastest general-purpose model."),
-    ModelSpec("oiv7-m", "Bingo (medium) - Open Images v7 (600 classes)", "yolov8m-oiv7.pt", "Balance of speed and accuracy."),
-    ModelSpec("oiv7-l", "Large - Open Images v7 (600 classes)", "yolov8l-oiv7.pt", "More accurate, slower."),
-    ModelSpec("oiv7-x", "XL (extra large) - Open Images v7 (600 classes)", "yolov8x-oiv7.pt", "Most accurate, slowest."),
-    ModelSpec("coco-n", "COCO - YOLO11n (80 classes)", "yolo11n.pt", "Small, fast, everyday objects."),
 )
 
 
