@@ -3,6 +3,9 @@ headless = true
 enableXsrfProtection = true
 maxUploadSize = 100
 
+[client]
+toolbarMode = "minimal"
+
 [browser]
 gatherUsageStats = false
 
