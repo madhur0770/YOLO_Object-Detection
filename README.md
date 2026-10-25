@@ -1,5 +1,7 @@
 # YOLO Object Detection Studio
 
+**Live demo: https://yoloobject-detection-3kou6hkum9kkpgnnb2benu.streamlit.app/** (free hosting, so it sleeps when idle and takes a moment to wake up)
+
 [![CI](https://github.com/madhur0770/YOLO_Object-Detection/actions/workflows/ci.yml/badge.svg)](https://github.com/madhur0770/YOLO_Object-Detection/actions/workflows/ci.yml)
 
 **A Streamlit app for detecting and counting objects with YOLO models: upload an image or video, use the live camera, or take a snapshot, restrict counting to a region of interest, and export the counts as CSV. Includes a custom-trained mask detector and the training pipeline behind it.**
@@ -45,7 +47,7 @@ docker run -p 8501:8501 yolo-studio     # then open http://localhost:8501
 
 ### Deploying
 
-The repository includes `packages.txt` (the system library OpenCV needs) so it can run on [Streamlit Community Cloud](https://streamlit.io/cloud): create an app from this repository with `app.py` as the entry point. Use the nano or medium models there; the large ones need more memory than free hosting provides. The `Dockerfile` also works on any container host, for example a Hugging Face Docker Space. This repository does not currently have a hosted demo link.
+The repository includes `packages.txt` (the system library OpenCV needs) so it can run on [Streamlit Community Cloud](https://streamlit.io/cloud): create an app from this repository with `app.py` as the entry point. Use the nano or medium models there; the large ones need more memory than free hosting provides. The `Dockerfile` also works on any container host, for example a Hugging Face Docker Space. On a hosted server the app starts on the small COCO model and offers only the browser camera, since the server has no webcam.
 
 ## The mask detector
 

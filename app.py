@@ -13,9 +13,11 @@ from datetime import datetime
 
 import streamlit as st
 
-from yolostudio import counting, inference, live, models
+from yolostudio import counting, hosting, inference, live, models
 
 st.set_page_config(page_title="YOLO Object Detection Studio", page_icon=":mag:", layout="wide")
+
+HOSTED = hosting.is_hosted()
 
 
 @dataclass
@@ -201,8 +203,14 @@ st.caption("Detect and count objects in images, video and live camera, restrict 
 
 with st.sidebar:
     st.header("Model")
+    keys = [m.key for m in models.MODELS]
     spec = models.get_model_spec(
-        st.selectbox("Model", [m.key for m in models.MODELS], format_func=lambda k: models.get_model_spec(k).title)
+        st.selectbox(
+            "Model",
+            keys,
+            index=keys.index("coco-n") if HOSTED else 0,  # the smallest general model suits a hosted server
+            format_func=lambda k: models.get_model_spec(k).title,
+        )
     )
     st.caption(spec.description)
     confidence = st.slider("Confidence threshold", 0.05, 0.95, 0.25, 0.05)
@@ -264,7 +272,10 @@ with tab_live:
         st.error("Fix the region of interest in the sidebar first.")
     else:
         live_session.configure(spec.weights, settings.confidence, settings.allowed, settings.roi, settings.show_centroids)
-        source = st.radio("Camera source", ["This computer's webcam", "Browser camera"], horizontal=True, key="live_source")
+        if HOSTED:  # the server has no webcam, so only the visitor's browser camera makes sense
+            source = "Browser camera"
+        else:
+            source = st.radio("Camera source", ["This computer's webcam", "Browser camera"], horizontal=True, key="live_source")
         if source == "Browser camera":
             browser_camera(live_session)
         else:
